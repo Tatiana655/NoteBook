@@ -405,6 +405,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             viewer->iscrollMax.v = Ceil((double)viewer->iscrollMax.v/(double)viewer->coef.v);
             viewer->iscrollPos.v =(viewer->iscrollPos.v/viewer->coef.v);
 
+            viewer->curPos /= viewer->coef.v;
+
             SetScrollRange(hwnd, SB_VERT, 0, viewer->iscrollMax.v + tmperr, FALSE);
             SetScrollPos(hwnd, SB_VERT, viewer->iscrollPos.v, TRUE);
         }
