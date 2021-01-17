@@ -1,0 +1,15 @@
+
+#include "Menu.h"
+
+Menu MENU
+ {
+ POPUP "File"
+ {
+ MENUITEM "Open", IDM_OPEN
+  MENUITEM "Exit", IDM_EXIT
+ }
+ POPUP "View"
+ {
+ MENUITEM "Change Mode", IDM_MOD
+ }
+ }
