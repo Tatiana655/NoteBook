@@ -1,4 +1,4 @@
 EXPORTS
-    DllMain @1
+    DllMain@12 @1
     SomeFunction @2
     readFile @3
