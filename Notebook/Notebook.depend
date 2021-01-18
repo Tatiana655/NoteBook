@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1610799700 source:d:\codeblocks\notebook\main.c
+1610878847 source:d:\codeblocks\notebook\main.c
 	<stdio.h>
 	<tchar.h>
 	<windows.h>
