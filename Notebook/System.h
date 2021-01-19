@@ -23,8 +23,8 @@ typedef struct Model
  */
 typedef struct Pairhv
 {
-    int v;
-    int h;
+    size_t v;
+    size_t h;
 } Pairhv;
 
 /** Pairhv

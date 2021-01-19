@@ -2,31 +2,28 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
-	<File name="main.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="15892" topLine="273" />
-		</Cursor>
-		<Folding>
-			<Collapse line="175" />
-			<Collapse line="272" />
-			<Collapse line="335" />
-			<Collapse line="523" />
-			<Collapse line="555" />
-		</Folding>
-	</File>
-	<File name="System.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1526" topLine="34" />
-		</Cursor>
-	</File>
 	<File name="Menu.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="0" />
+			<Cursor1 position="61" topLine="0" />
 		</Cursor>
+	</File>
+	<File name="main.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="522" topLine="8" />
+		</Cursor>
+		<Folding>
+			<Collapse line="265" />
+			<Collapse line="331" />
+		</Folding>
 	</File>
 	<File name="System.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1405" topLine="47" />
+			<Cursor1 position="2515" topLine="62" />
+		</Cursor>
+	</File>
+	<File name="System.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="697" topLine="19" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
