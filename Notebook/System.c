@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "System.h"
-#include "..\readfile\main.h"//путь к .h fileread
+#include "..\readfileDLL\main.h"//путь к .h fileread
 
 /** \brief
  *  //функция чтения
@@ -48,6 +48,7 @@ int InitModel(struct Model * model, char * filename)
         return 0;
     }
     model->allText = readFile(filename);
+
     if (model->allText==NULL) return 1;
     model->lineCount = 1;
     model->maxLength = 0;
@@ -87,7 +88,7 @@ int InitModel(struct Model * model, char * filename)
  */
 void CloseModel(struct Model * model)
 {
-    if (model != NULL)
+    if ((model != NULL) && (model->allText != NULL))
     {
         free(model->offset);
         free(model->allText);

@@ -176,7 +176,19 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             int ch = InitModel( model,(char *)str->lpCreateParams);
             if (ch == 1)
             {
-                SendMessage(hwnd, WM_DESTROY, 0, 0);
+        int msgboxID = MessageBox(
+        NULL,
+        (LPCWSTR)"Wrong file name",
+        (LPCWSTR)"Error",
+        MB_OK
+        );
+        switch (msgboxID)
+        {
+        case IDOK:
+            SendMessage(hwnd, WM_DESTROY, 0, 0);
+            // TODO: add code
+        break;
+        }
             }
             viewer = (Viewer*)malloc(sizeof(Viewer));
             if (viewer==NULL) {
@@ -338,7 +350,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         break;
     case WM_SIZE :
     {
-
+        if (model == NULL) break;
         if (viewer == NULL) break;
         RECT rc;//размеры рабочей области
         GetClientRect(hwnd, &rc);
