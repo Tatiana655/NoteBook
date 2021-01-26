@@ -159,6 +159,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     //int lastDown = 0;
     static char szFileName[256];
     static FILE * myfile;
+
+    static lastPosx, lastPosy;
+
     switch (message)                  /* handle the messages */
     {
     case WM_CREATE://Ok
@@ -216,6 +219,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             GetTextMetrics(hdc, &tm);//получение размеров символа
             viewer->cChar.x = tm.tmAveCharWidth;//ширина символа
             viewer->cChar.y = tm.tmHeight + tm.tmExternalLeading;
+            viewer->actPos = viewer->curPos;
+            viewer->actDelta = viewer->actDelta;
             PrintStatus(message, viewer, myfile, 0 );
         break;
 
@@ -245,6 +250,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 viewer->iscrollPos.v=0;
                 viewer->curPos = 0;
                 viewer->deltaPos = 0;
+                viewer->actPos = viewer->curPos;
+                viewer->actDelta = viewer->actDelta;
 //                last = 0;
                 viewer->mode = WITHOUT_LAYOUT;
                 SendMessage(hwnd, WM_SIZE, 0, 0);
@@ -263,7 +270,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             viewer->mode= !viewer->mode;
             PrintStatus(message, viewer, myfile, 1 );
             //тут надо определить блок с котором находится текущая позиция и передвинуть на начало блока, если с версткой. Без верски всё норм
-
+            viewer->deltaPos = 0;
+            viewer->actDelta = 0;
             //отправть сообшения WM_SIZE и в WM_PAINT
             SendMessage(hwnd, WM_SIZE, 0, 0);
             InvalidateRect(hwnd,NULL,TRUE);
@@ -277,7 +285,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     case WM_PAINT:
     {
         hdc = BeginPaint(hwnd,&p);
-
+        size_t blockSize = viewer->cClient.x/viewer->cChar.x;
         if ((viewer->mode == WITHOUT_LAYOUT))
         {
             PrintStatus(message, viewer, myfile, 2 );
@@ -303,7 +311,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             int iCur = Max(0, viewer->curPos);
             int iMaxCount = Ceil((double)viewer->cClient.y/(double)viewer->cChar.y);//сколько строк помещается в рабочую область
 
-            size_t blockSize = viewer->cClient.x/viewer->cChar.x;
+
             int k = 0;
             int delt = viewer->deltaPos;
             y = 0;//поставь верный у
@@ -334,6 +342,33 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             }
 
         }
+        /*следи за текущей позицией
+        if (viewer->mode == WITH_ALL_LAYOUT){
+        int tmp = viewer->curPos;
+        int counter = 0;//координата y
+        if (tmp < viewer->beforePos) counter += (size_t)Ceil((double)(model->offset[tmp+1]-model->offset[tmp] + 1 - viewer->deltaPos)/(double)blockSize);
+        tmp++;
+        while (tmp < viewer->beforePos)
+        {
+            counter += (size_t)Ceil((double)(model->offset[tmp+1]-model->offset[tmp] + 1)/(double)blockSize);
+            tmp++;
+        }
+        counter += viewer->beforeDelta / blockSize;
+        //if (viewer->beforeDelta % blockSize == 0) counter--;
+        HPEN brush1 =CreatePen(1,1,RGB(255,255,255));
+        SelectObject(hdc, brush1);
+        Rectangle(hdc, 0,0,1,viewer->cClient.y);
+        DeleteObject(brush1);
+
+        HPEN brush = CreatePen(2,2,RGB(255,0,0));
+        SelectObject(hdc, brush);
+
+        lastPosx = (viewer->beforeDelta % blockSize) * viewer->cChar.x;
+        lastPosy = viewer->cChar.y * counter;
+        Rectangle(hdc, (viewer->beforeDelta % blockSize) * viewer->cChar.x, viewer->cChar.y * counter,
+                  (viewer->beforeDelta % blockSize) * viewer->cChar.x + 1, viewer->cChar.y * (counter + 1));
+        DeleteObject(brush);
+        }*/
         EndPaint(hwnd, &p);
         break;
     }
@@ -366,6 +401,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             viewer->coef.v = Ceil((double)viewer->iscrollMax.v / (double)MAX_COUNT);
             if(viewer->coef.v ==0) viewer->coef.v=1;
             viewer->curPos -= viewer->curPos % viewer->coef.v;
+
             viewer->iscrollMax.v = viewer->iscrollMax.v/viewer->coef.v;
             viewer->iscrollPos.v =(viewer->iscrollPos.v/viewer->coef.v);
             SetScrollRange(hwnd, SB_VERT, 0, viewer->iscrollMax.v, FALSE);
@@ -381,6 +417,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
             SetScrollRange(hwnd, SB_HORZ, 0, viewer->iscrollMax.h, FALSE);
             SetScrollPos(hwnd, SB_HORZ, viewer->iscrollPos.h, TRUE);
+
+            viewer->actPos = viewer->curPos;
+             viewer->actDelta = viewer->deltaPos;;
         }
         else//режим верстки почему-то при умеличении рабочеобласти вниз меняется главная строка
         {
@@ -396,30 +435,21 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             size_t m=0;
             for (m=0; m < model->lineCount; m++)
             {
-                /*if ((viewer->curPos - m < viewer->coef.v) && (viewer->curPos >=m ))
-                {
-                    viewer->curPos = m;
-                    viewer->iscrollPos.v = viewer->iscrollMax.v;
-                };*/
                 viewer->iscrollMax.v += (size_t)Ceil((double)(model->offset[m+1]-model->offset[m] + 1)/(double)blockSize);//сколько блоков в одной строке
             }
-           // viewer->iscrollPos.v += idNewBlock/viewer->coef.v;// а это зачем? тут мб коэф.в не хватает
-            //viewer->iscrollMax.v -= 1;//viewer->cClient.y / viewer->cChar.y;
-            //viewer->iscrollMax.v /=coef;
 
             viewer->iscrollMax.v = Max(0, viewer->iscrollMax.v);// с 1
-
-            //viewer->iscrollPos.v = Min(viewer->iscrollPos.v, viewer->iscrollMax.v-1);
 
             viewer->coef.v = Ceil((double)(viewer->iscrollMax.v-1) / (double)MAX_COUNT);
             if (viewer->coef.v == 0) viewer->coef.v=1;
             size_t iCur = 0;
             int iDelt = 0;
             int tmpCur = 0, tmpDelt = 0;
+            //ищем в каком блоке текущая (before) позиция и меняем iCurPos+delt
             viewer->iscrollPos.v = 0;
             while (1)
             {
-                if ((iCur < viewer->curPos ) || ((iCur <= viewer->curPos) && (iDelt <= viewer->deltaPos) ))
+                if ((iCur < viewer->actPos ) || ((iCur <= viewer->actPos) && (iDelt <= viewer->actDelta) ))
                 {
                     tmpCur = iCur;
                     tmpDelt = iDelt;
@@ -448,27 +478,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                         }
                         tmp--;
                     }
-               /* while (model->offset[iCur+1] - model->offset[iCur] < iDelt)
-                {
-                    iCur++;
-                    iDelt -= model->offset[iCur+1] - model->offset[iCur];
-                }
-                int idNewBlock = iDelt / blockSize;// в каком блоке дельта? (номер блока)
-                iDelt= idNewBlock*blockSize;//дельта указывает на начало нового блока в currPos*/
             }
 
-    /*    int counter = 0;
-          for (m=0; m < model->lineCount; m++)//находит в каком блоке текущая позиция и куда ставить скролл
-            {
-                if ((viewer->curPos - m <= viewer->coef.v) && (viewer->curPos >=m ))
-                {
-                    viewer->curPos = Max(0, m);
-                    viewer->iscrollPos.v = counter;
-                    break;
-                };
-                counter += (size_t)Ceil((double)(model->offset[m+1]-model->offset[m])/(double)blockSize);
-            }
-*/
             int tmperr = 0;
             if ((viewer->iscrollMax.v) % viewer->coef.v == 0) tmperr = -1;
 //            if (tmperr == -1) last = 1; else last = 0;
@@ -523,6 +534,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             if (viewer->mode == WITHOUT_LAYOUT)
             {
                 viewer->curPos = (viewer->iscrollPos.v)*viewer->coef.v;
+                viewer->actPos = viewer->curPos;
+                viewer->actDelta = viewer->deltaPos;
             }
             else
             {
@@ -589,10 +602,14 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 }
             }
             PrintStatus(message, viewer, myfile, 7 );
+            viewer->actPos = viewer->curPos;
+            viewer->actDelta = viewer->deltaPos;
             SetScrollPos(hwnd, SB_VERT, viewer->iscrollPos.v, TRUE);
+
             ScrollWindow(hwnd, 0, -viewer->cChar.y * iVscrollInc * viewer->coef.v, NULL, NULL);
-            UpdateWindow(hwnd);
+
         }
+        UpdateWindow(hwnd);
         break;
     }
     case WM_HSCROLL :

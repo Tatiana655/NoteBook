@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1611124353 source:d:\codeblocks\notebook\main.c
+1611673744 source:d:\codeblocks\notebook\main.c
 	<stdio.h>
 	<tchar.h>
 	<windows.h>
@@ -10,7 +10,7 @@
 	"System.h"
 	"Menu.h"
 
-1611055827 d:\codeblocks\notebook\system.h
+1611671485 d:\codeblocks\notebook\system.h
 	<stdio.h>
 
 1604083962 d:\codeblocks\notebook\menu.h

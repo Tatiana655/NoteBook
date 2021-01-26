@@ -60,8 +60,10 @@ typedef struct Viewer//коэфф
     Mode mode;
     struct Pairxy cChar, cClient;//cChar - ширина высота символа //cClient : размеры рабочей области
     struct Pairhv iscrollPos, iscrollMax;
-    size_t curPos;//текущая позиция (строка)
-    int deltaPos;//номер символа в этой строке
+    size_t curPos;//текущая позиция (строка) откуда рисовать
+    int deltaPos;//номер символа в этой строке откуда рисовать
+    size_t actPos;//текущая позиция (строка), где находится фактически
+    int actDelta;//номер символа в этой строке, где находится фактически
     struct Pairhv coef;//коэффициенты для верстки и больших файлов
 } Viewer;
 
